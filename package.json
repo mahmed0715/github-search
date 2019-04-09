@@ -41,6 +41,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.7.1",
     "@fortawesome/react-fontawesome": "^0.1.4",
     "bulma": "^0.7.4",
+    "bulma-pagination-react": "^0.1.1",
     "react": "^16.8.1",
     "react-dom": "^16.8.1"
   }

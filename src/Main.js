@@ -4,54 +4,19 @@ import ReactDOM from 'react-dom';
 import { formatAmount } from './utils.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faBolt } from '@fortawesome/free-solid-svg-icons';
+import Pagination from 'bulma-pagination-react';
+import Search from './components/Search'
 
 const API = 'https://api.github.com/search/issues';
-class Search extends React.Component {
-    constructor(){
-        super()
-        // we will have more form elements like select box for other input criteria for github search
-        this.state = {
-            q: 'reactjs',
-            type: '',
-            language: ''
-
-        };
-    }
-    render() {
-      return (
-        <form onSubmit={this.handleForm.bind(this)}>
-           <div className="field">
-                <div className="control">
-                    <input
-                        className="input"
-                        type="text"
-                        placeholder="Search keyword + Enter"
-                        value={this.state.q}
-                        onChange={this.setQ.bind(this)}
-                    />
-                </div>
-            </div>
-        </form>
-      );
-    }
-    setQ(e){
-        this.state.q = e.target.value
-    }
-    componentDidMount(){
-        this.props.fetchGithub(this.state);  
-    }
-    handleForm(e) {
-      e.preventDefault();
-      this.props.fetchGithub(this.state);
-    }
-};
-
 export class Main extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             q: '',
             current: 'issues',
+            perPage: 20,
+            currentPage: 1,
+            total_count: 1,
             issues: [],
             repositories: [],
             gists: [],
@@ -63,16 +28,23 @@ export class Main extends React.Component {
         let q = search.q;
         this.setState({q: q})
         // will call to proper api from here based on state current params
-        let url = `${API}?q=${q}`;
+        let url = `${API}?q=${q}&page=${this.state.currentPage}&per_page=${this.state.perPage}`;
         fetch(url).
         then(res => res.json()).
         then(data => {
           console.log(data);
           this.setState({
-            issues: data
+            issues: data,
+            total_count: data.total_count
           })
         }).
         catch(error => console.log('Oops! . There Is A Problem', error));
+    }
+    fetchMore(page){
+        console.log(page);
+        this.setState({currentPage : page}, ()=>{this.fetchGithub(this.state)});
+        console.log(page, this.state.currentPage)
+        // this.fetchGithub(this.state);
     }
     render() {
         let data = this.state[this.state.current];
@@ -107,7 +79,7 @@ export class Main extends React.Component {
                                     {
                                     data.items && data.items.map((single)=>{
                                     return <div className="box" key={single.id}>
-                                    <a href={single.html_url} target="_blank" className="has-text-dark">                                    <article className="media">
+                                    <a href={single.html_url} target="_blank" className="has-text-dark" title="Click to visit github issue page">                                    <article className="media">
                                       <div className="media-left">
                                         <figure className="image is-64x64">
                                           <img src={single.user.avatar_url} alt="Image" />
@@ -133,20 +105,15 @@ export class Main extends React.Component {
                                 })
                                 }
                             </div>
-                            <nav className = "pagination  is-centered" role = "navigation" aria-label = "pagination" >
-                                <a className = "pagination-previous" title = "This is the first page" disabled > 
-                                Previous </a> 
-                                <a className = "pagination-next" > Next page </a> 
-                                <ul className = "pagination-list" >
-                                <li >
-                                <a className = "pagination-link is-current"  aria-label = "Page 1"  aria-current = "page" > 1 </a> 
-                                </li> <li>
-                                <a className = "pagination-link" aria-label = "Goto page 2" > 2 </a> 
-                                </li> 
-                                <li>
-                                <a className = "pagination-link"
-                            aria-label = "Goto page 3" > 3 </a> </li> </ul> 
-                                </nav>
+                               {
+                            <Pagination
+                            className="is-centered"
+                        pages={this.state.total_count}
+                        currentPage={this.state.currentPage}
+                        onChange={this.fetchMore.bind(this)}
+                        />
+                        }
+                      
                         </div>
                     </div>
                 </div>
