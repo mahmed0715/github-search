@@ -35,11 +35,17 @@ class Search extends React.Component {
       );
     }
     componentDidMount(){
-        this.props.fetchGithub(this.state);  
+        this.props.parentSetState({q: this.state.q}, ()=>{
+            this.props.fetchGithub();
+        })
     }
     handleForm(e) {
       e.preventDefault();
-      this.props.fetchGithub(this.state);
+      console.log(this.state.q)
+      this.props.parentSetState({q: this.state.q}, ()=>{
+        this.props.fetchGithub();
+      })
+      
     }
 };
 
